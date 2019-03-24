@@ -6,7 +6,7 @@ using UnityEngine.Jobs;
 
 public class LifeWorld : MonoBehaviour
 {
-    
+
     /// <summary>
     /// 周りの生きてるLifeの個数を計算するJob
     /// </summary>
@@ -54,6 +54,11 @@ public class LifeWorld : MonoBehaviour
         public int minBirthCount;
         public int maxBirthCount;
 
+        [ReadOnly]
+        public NativeArray<float> RandomValueArray;
+
+        public float MissRate;
+
         public void Execute(int index)
         {
             //値を取得
@@ -64,13 +69,20 @@ public class LifeWorld : MonoBehaviour
             {//生きてる時は、死ぬかどうかの判定
                 var boolAlive = (count > minDeadCount) && (count < maxDeadCount);
                 isAlive = boolAlive ? 1 : 0;
+                if (RandomValueArray[index] < MissRate)
+                {
+                    if(isAlive == 0)
+                    {
+                        isAlive = 1;
+                    }
+                }
             }
             else
             {//死んでる時は、生まれるかどうかの判定
                 var boolAlive = (count >= minBirthCount) && (count <= maxBirthCount);
                 isAlive = boolAlive ? 1 : 0;
             }
-
+            
             lifeAliveBoolList[index] = isAlive;
         }
     }
@@ -122,6 +134,10 @@ public class LifeWorld : MonoBehaviour
 
     [Range(0.0f,1.0f)]
     public float birthThreshold;
+
+    [Range(0.0f, 1.0f)]
+    public float MissRate;
+
 
     private int _length;
     // Start is called before the first frame update
@@ -179,7 +195,7 @@ public class LifeWorld : MonoBehaviour
         _aroundIndexList.Dispose();
         _allBoolData.Dispose();
     }
-    void Update()
+    void FixedUpdate()
     {
         /*
         sw.Stop();
@@ -196,17 +212,25 @@ public class LifeWorld : MonoBehaviour
         var handler1 = job1.Schedule(_length, 0);
         handler1.Complete();
         
+        var randomValueArrayBuffer = new NativeArray<float>(_length, Allocator.TempJob);
+        for(int i = 0; i < _length; i++)
+        {
+            randomValueArrayBuffer[i] = Random.value;
+        }
         var job2 = new ParallelForLifeAliveJob() {
             envCountList = outputEnvCountListBuffer,
             lifeAliveBoolList = _allBoolData,
             minDeadCount = MinDeadCount,
             maxDeadCount= MaxDeadCount,
             minBirthCount = MinBirthCount,
-            maxBirthCount = MaxBirthCount
+            maxBirthCount = MaxBirthCount,
+            RandomValueArray = randomValueArrayBuffer,
+            MissRate = MissRate
         };
         var handler2 = job2.Schedule(_length, 0);
         handler2.Complete();
         outputEnvCountListBuffer.Dispose();
+        randomValueArrayBuffer.Dispose();
 
         if (!isTest)
         {
