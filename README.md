@@ -1,0 +1,4 @@
+# HoloLife
+Hololensに対応させようと思って作った、処理軽いライフゲーム。
+HololensはECSがまだだめっぽいのでJobSystemでしか実装してないけど、よく見たら動かない原因がUnity.Collectionsらしいので、既にHololensでは動かないです。
+パラメータ変えれば2Dも3Dも出来ます。
