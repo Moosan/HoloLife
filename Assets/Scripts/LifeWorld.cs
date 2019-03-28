@@ -71,10 +71,16 @@ public class LifeWorld : MonoBehaviour
                 isAlive = boolAlive ? 1 : 0;
                 if (RandomValueArray[index] < MissRate)
                 {
+                    /*
+                    //間違えて死んじゃう
                     if(isAlive == 0)
                     {
                         isAlive = 1;
                     }
+                    /*/
+                    //判定を間違えちゃう
+                    isAlive = !boolAlive ? 1 : 0;
+                    //*/
                 }
             }
             else
@@ -195,7 +201,7 @@ public class LifeWorld : MonoBehaviour
         _aroundIndexList.Dispose();
         _allBoolData.Dispose();
     }
-    void FixedUpdate()
+    void Update()
     {
         /*
         sw.Stop();
